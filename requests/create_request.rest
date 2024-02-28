@@ -2,7 +2,6 @@ POST http://localhost:3003/api/blogs
 Content-Type: application/json
 
 {
-    "title": "The Things 3",
     "author": "Arto",
     "url": "http://www.google.es",
     "likes": 5

@@ -50,7 +50,7 @@ test('creates new blog via POST and checks the count', async () => {
     assert.strictEqual(afterCounter.body.slice(-1)[0].likes, likesGenerator)
 })
 
-test.only('if no likes were saved, it defaults to 0', async () => {
+test('if no likes were saved, it defaults to 0', async () => {
     const newBlog =
     {
         "title": "without 0",
@@ -67,6 +67,29 @@ test.only('if no likes were saved, it defaults to 0', async () => {
     assert.strictEqual(blogs.body.slice(-1)[0].likes, 0)
 })
 
+test.only('if no title is submitted, it throws 400', async () => {
+    const newBlog =
+    {
+        "author": "pepe",
+        "url": "http://www.google.es"
+    }
+
+    await api.post('/api/blogs')
+        .send(newBlog)
+        .expect(400)
+})
+
+test.only('if no author is submitted, it throws 400', async () => {
+    const newBlog =
+    {
+        "title": "The things",
+        "url": "http://www.google.es"
+    }
+
+    await api.post('/api/blogs')
+        .send(newBlog)
+        .expect(400)
+})
 after(async () => {
     await mongoose.connection.close()
 })
