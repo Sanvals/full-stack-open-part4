@@ -41,9 +41,35 @@ const mostBlogs = (blogs) => {
     
 }
 
+const mostLikes = (blogs) => {
+    const authors = [... new Set(blogs.map(b => b.author))]
+
+    let maxLikes = 0
+    
+    winner = { author: '', likes: 0 }
+
+    authors.forEach(a => {
+        let partTotal = 0
+        blogs.map(b => {
+            if (b.author === a) {
+                partTotal += b.likes
+            }
+        })
+
+        if (partTotal > maxLikes) {
+            maxLikes = partTotal
+            winner.likes = partTotal
+            winner.author = a
+        }
+    })
+
+    return winner.author === '' ? null : winner
+}
+
 module.exports = {
     dummy,
     totalLikes,
     favoriteBlog,
     mostBlogs,
+    mostLikes
 }

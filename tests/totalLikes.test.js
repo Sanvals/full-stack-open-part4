@@ -133,3 +133,28 @@ describe('prolific author', () => {
       })
   })
 })
+
+describe('most liked', () => {
+  test('empty lists equal to null', () => {
+    const result = listHelper.mostLikes([])
+    assert.deepStrictEqual(result, null)
+  })
+
+  test('when list has only one blog, displays the author with the likes', () => {
+    const result = listHelper.mostLikes(listWithOneBlog)
+    assert.deepStrictEqual(result,
+      {
+        author: 'Edsger W. Dijkstra',
+        likes: 5
+      })
+  })
+
+  test('when list has more than one blog, finds the most liked author', () => {
+    const result = listHelper.mostLikes(listWithFewBlogs)
+    assert.deepStrictEqual(result, 
+      {
+      author: 'Edsger W. Dijkstra',
+      likes: 17
+      })
+  })
+})
