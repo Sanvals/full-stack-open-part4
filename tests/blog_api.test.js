@@ -25,7 +25,7 @@ test('id is the primary identifier property', async () => {
     })
 })
 
-test.only('creates new blog via POST and checks the count', async () => {
+test('creates new blog via POST and checks the count', async () => {
     const prevCounter = await api.get('/api/blogs')
     const likesGenerator = Math.round(Math.random() * 100)
     
@@ -48,6 +48,23 @@ test.only('creates new blog via POST and checks the count', async () => {
     assert.strictEqual(prevCounter.body.length, afterCounter.body.length -1)
     // Check that the created item has the correct values
     assert.strictEqual(afterCounter.body.slice(-1)[0].likes, likesGenerator)
+})
+
+test.only('if no likes were saved, it defaults to 0', async () => {
+    const newBlog =
+    {
+        "title": "without 0",
+        "author": "pepe",
+        "url": "http://www.google.es",
+    }
+
+    await api.post('/api/blogs')
+        .send(newBlog)
+        .expect(201)
+        .expect('Content-Type', /application\/json/)
+    
+    const blogs = await api.get('/api/blogs')
+    assert.strictEqual(blogs.body.slice(-1)[0].likes, 0)
 })
 
 after(async () => {
