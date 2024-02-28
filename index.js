@@ -12,7 +12,7 @@ const blogSchema = new mongoose.Schema({
 
 const Blog = mongoose.model('Blog', blogSchema)
 
-const password = "testeo"
+const password = "XXX"
 const mongoUrl =
   `mongodb+srv://testeo:${password}@cluster0.bogphdh.mongodb.net/phoneApp?retryWrites=true&w=majority&appName=Cluster0`
 
