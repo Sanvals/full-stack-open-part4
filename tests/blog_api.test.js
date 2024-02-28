@@ -6,15 +6,22 @@ const app = require('../app')
 
 const api = supertest(app)
 
-test.only('2 blog posts are returned as json', async () => {
+test('2 blog posts are returned as json', async () => {
   await api.get('/api/blogs')
     .expect(200)
     .expect('Content-Type', /application\/json/)
 })
 
-test.only('there are two blog posts', async () => {
+test('there are two blog posts', async () => {
     const response = await api.get('/api/blogs')
     assert.strictEqual(response.body.length, 2)
+})
+
+test.only('id is the primary identifier property', async () => {
+    const response = await api.get('/api/blogs')
+    response.body.forEach(b => {
+        assert.strictEqual("id" in b, true)
+    })
 })
 
 after(async () => {
