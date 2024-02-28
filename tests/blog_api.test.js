@@ -91,7 +91,7 @@ test('if no author is submitted, it throws 400', async () => {
         .expect(400)
 })
 
-test.only('it deletes a post correctly', async () => {
+test('it deletes a post correctly', async () => {
     const newBlog =
     {
         "title": "post to be deleted",
@@ -108,6 +108,40 @@ test.only('it deletes a post correctly', async () => {
     await api.delete(`/api/blogs/${idOfPost}`)
         .expect(200)
         .expect('Content-Type', /application\/json/)
+})
+
+test('it updates a post correctly', async () => {
+    const blog =
+    {
+        "title": "Post to be updated",
+        "author": "System",
+        "url": "http://www.google.es",
+        "likes": 2
+    }
+    // create a new post
+    await api.post('/api/blogs')
+        .send(blog)
+        .expect(201)
+        .expect('Content-Type', /application\/json/)
+
+    // catches the post created
+    const newPost = await api.get('/api/blogs')
+    const dataNewPost = newPost.body.slice(-1)[0]
+    // Check it has the correct amount of likes
+    assert.strictEqual(dataNewPost.likes === 2, true)
+
+    // update the likes to 100
+    const newLikes = {
+        "likes": 100
+    }
+    await api.put(`/api/blogs/${dataNewPost.id}`)
+        .send(newLikes)
+        .expect(200)
+
+    // get the updated post
+    const updatedPost = await api.get(`/api/blogs/${dataNewPost.id}`)
+    // compare the likes to 100
+    assert.strictEqual(updatedPost.body.likes, 100)
 })
 
 
