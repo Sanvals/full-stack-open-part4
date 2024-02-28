@@ -21,8 +21,29 @@ const favoriteBlog = (blogs) => {
             }
 }
 
+const mostBlogs = (blogs) => {
+    const authorsList = blogs.map(b => b.author)
+
+    const winner = {
+        author : '',
+        blogs: 0
+    }
+
+    authorsList.forEach(a => {
+        const compa = authorsList.filter(b => b == a).length
+        if (compa > winner.blogs) {
+            winner.author = a
+            winner.blogs = compa
+        }
+    })
+
+    return winner.author === '' ? null : winner
+    
+}
+
 module.exports = {
     dummy,
     totalLikes,
-    favoriteBlog
+    favoriteBlog,
+    mostBlogs,
 }
