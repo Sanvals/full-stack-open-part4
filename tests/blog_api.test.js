@@ -67,7 +67,7 @@ test('if no likes were saved, it defaults to 0', async () => {
     assert.strictEqual(blogs.body.slice(-1)[0].likes, 0)
 })
 
-test.only('if no title is submitted, it throws 400', async () => {
+test('if no title is submitted, it throws 400', async () => {
     const newBlog =
     {
         "author": "pepe",
@@ -79,7 +79,7 @@ test.only('if no title is submitted, it throws 400', async () => {
         .expect(400)
 })
 
-test.only('if no author is submitted, it throws 400', async () => {
+test('if no author is submitted, it throws 400', async () => {
     const newBlog =
     {
         "title": "The things",
@@ -90,6 +90,27 @@ test.only('if no author is submitted, it throws 400', async () => {
         .send(newBlog)
         .expect(400)
 })
+
+test.only('it deletes a post correctly', async () => {
+    const newBlog =
+    {
+        "title": "post to be deleted",
+        "author": "pepe",
+        "url": "http://www.google.es",
+    }
+
+    await api.post('/api/blogs').send(newBlog)
+    
+    // Fetch the ID of the last sent blog post
+    const postToDelete = await api.get('/api/blogs')
+    const idOfPost = postToDelete.body.slice(-1)[0].id
+    // Delete the created post
+    await api.delete(`/api/blogs/${idOfPost}`)
+        .expect(200)
+        .expect('Content-Type', /application\/json/)
+})
+
+
 after(async () => {
     await mongoose.connection.close()
 })
