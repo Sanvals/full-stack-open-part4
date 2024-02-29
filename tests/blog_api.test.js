@@ -7,11 +7,38 @@ const Blog = require('../models/blog')
 
 const api = supertest(app)
 
+test('first creates 2 blog posts', async () => {
+    const newBlog = {
+        "author": "pepe",
+        "title": `first database document`
+    }
+
+    await api.post('/api/blogs')
+        .send(newBlog)
+        .expect(201)
+        .expect('Content-Type', /application\/json/)
+    
+    
+    await api.post('/api/blogs')
+        .send(newBlog)
+        .expect(201)
+        .expect('Content-Type', /application\/json/)
+    
+    const checkIfTwo = await api.get('/api/blogs')
+        .expect(200)
+        .expect('Content-Type', /application\/json/)
+    
+    assert.strictEqual(checkIfTwo.body.length, 2)
+})
+
 test('2 blog posts are returned as json', async () => {
-  await api.get('/api/blogs')
+  const blogs = await api.get('/api/blogs')
     .expect(200)
     .expect('Content-Type', /application\/json/)
+
+    assert.strictEqual(blogs.body.length, 2)
 })
+
 
 test('there are two blog posts', async () => {
     const response = await api.get('/api/blogs')
@@ -144,7 +171,20 @@ test('it updates a post correctly', async () => {
     assert.strictEqual(updatedPost.body.likes, 100)
 })
 
+test('it deletes all posts correctly', async () => {
+    // delete all posts on the database
+    await Blog.deleteMany()
+    
+    // Fetch the ID of the last sent blog post
+    const checkEmpty = await api.get('/api/blogs')
+        .expect(200)
+        .expect('Content-Type', /application\/json/)
+    
+    // Check that there are 0 posts on the blog
+    assert.strictEqual(checkEmpty.body.length, 0)
+})
+
 
 after(async () => {
-    await mongoose.connection.close()
+await mongoose.connection.close()
 })
