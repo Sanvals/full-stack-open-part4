@@ -1,9 +1,11 @@
 const bcrypt = require('bcryptjs')
 const usersRouter = require('express').Router()
 const User = require('../models/user')
+const Blog = require('../models/blog')
 
 usersRouter.get('/', async (request, response) => {
     const users = await User.find({})
+      .find({}).populate('blogs', { title: 1, link: 1 })
     response.json(users)
   })
 
@@ -14,6 +16,9 @@ usersRouter.get('/:id', async (request, response) => {
 
 usersRouter.post('/', async (request, response) => {
   const { username, name, password } = request.body
+  const grabAllBlogs = await Blog.find({})
+
+  const blogIds = grabAllBlogs.map(b => b.id)
 
   // check if that username is already taken
   const userTaken = await User.find({ username: username })
@@ -33,6 +38,7 @@ usersRouter.post('/', async (request, response) => {
     username,
     name,
     passwordHash,
+    blogs: blogIds
   })
 
   const savedUser = await user.save()
