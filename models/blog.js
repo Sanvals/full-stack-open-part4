@@ -6,9 +6,8 @@ const blogSchema = new mongoose.Schema({
         required: true
     },
     author: {
-        type: mongoose.Schema.Types.ObjectId,
-        red: 'User',
-        requires: true
+        type: String,
+        required: true
     },
     url: String,
     likes: {
