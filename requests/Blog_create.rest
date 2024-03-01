@@ -1,8 +1,9 @@
 POST http://localhost:3003/api/blogs
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Ikpvc2VmYSIsImlkIjoiNjVlMWMzMzQ4MzE3MzJkMjIyYTYxNTFjIiwiaWF0IjoxNzA5MzAwOTgwfQ.RqAKldQiGvxDqNX12jKtiJdEKFWnqzDdGdLcnFLux2c
 
 {
     "title": "The things from Josefa",
     "url": "http://www.google.es",
-    "likes": 5
+    "likes": 5,
 }
