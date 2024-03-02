@@ -31,8 +31,6 @@ blogRouter.get('/:id', async (request, response) => {
 })
 
 blogRouter.post('/', async (request, response) => {
-  //grab the token
-  console.log(request.token)
   if(!request.token) {
     return response.status(401).json({ error: 'token not found' })
   }
@@ -59,8 +57,31 @@ blogRouter.post('/', async (request, response) => {
 })
 
 blogRouter.delete('/:id', async (request, response) => {
-  const blogs = await Blog.findByIdAndDelete(request.params.id)
-  response.json(blogs)
+  if(!request.token) {
+    return response.status(401).json({ error: 'token not found' })
+  }
+
+  const decodedToken = jwt.verify(request.token, process.env.SECRET)
+
+  if(!decodedToken) {
+    return response.status(401).json({ error: 'token invalid' })
+  }
+
+  //grab the person who bears the token
+  const user = await User.findById(decodedToken.id)
+  const userId = user.id.toString()
+
+  //compare it to the author of the blog to delete
+  const blogToDelete = await Blog.findById(request.params.id)
+  const ownerOfBlog = blogToDelete.author.toString()
+  // console.log(`User: ${userId} attemps to delete blog of user: ${ownerOfBlog}, allow? ${userId === ownerOfBlog}`)
+
+  if (userId === ownerOfBlog) {
+    const blogs = await Blog.findByIdAndDelete(request.params.id)
+    response.json(blogs)
+  } else {
+    response.status(401).json({ error: 'unauthorized' })
+  }
 })
 
 blogRouter.put('/:id', async (request, response) => {
