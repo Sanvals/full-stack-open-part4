@@ -5,18 +5,8 @@ const jwt = require('jsonwebtoken')
 const config = require('../utils/config')
 const middleware = require('../utils/middleware');
 
-/*
-const getTokenFrom = request => {
-  const authorization = request.get('Authorization')
-  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
-    const cleanToken = authorization.replace('Bearer ', '')
-    return cleanToken
-  }
-  return null
-}
-*/
-
 blogRouter.use(middleware.tokenExtractor)
+blogRouter.use(middleware.userExtractor)
 
 blogRouter.get('/', async (request, response) => {
   const blogs = await Blog.find({})
@@ -57,24 +47,18 @@ blogRouter.post('/', async (request, response) => {
 })
 
 blogRouter.delete('/:id', async (request, response) => {
-  if(!request.token) {
-    return response.status(401).json({ error: 'token not found' })
+  // check if the blog still exists
+  const checkExistence = await Blog.find({ _id: request.params.id })
+  if (checkExistence.length === 0) {
+    return response.status(404).json({ error: 'blog not found' })
   }
-
-  const decodedToken = jwt.verify(request.token, process.env.SECRET)
-
-  if(!decodedToken) {
-    return response.status(401).json({ error: 'token invalid' })
-  }
-
-  //grab the person who bears the token
-  const user = await User.findById(decodedToken.id)
-  const userId = user.id.toString()
 
   //compare it to the author of the blog to delete
   const blogToDelete = await Blog.findById(request.params.id)
   const ownerOfBlog = blogToDelete.author.toString()
-  // console.log(`User: ${userId} attemps to delete blog of user: ${ownerOfBlog}, allow? ${userId === ownerOfBlog}`)
+  
+  const userId = request.userId
+  console.log(`User ${userId} is the owner of blog ${ownerOfBlog}? ${userId === ownerOfBlog}`)
 
   if (userId === ownerOfBlog) {
     const blogs = await Blog.findByIdAndDelete(request.params.id)
