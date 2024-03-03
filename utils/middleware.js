@@ -17,7 +17,7 @@ const tokenExtractor = (request, response, next) => {
         const cleanToken = authorization.replace('Bearer ', '')
         request.token = cleanToken
     } else {
-    request.token = null
+        request.token = null
     }
     next()
 }
@@ -25,8 +25,10 @@ const tokenExtractor = (request, response, next) => {
 const userExtractor = async (request, response, next) => {
     if (request.token) {
         const decodedToken = jwt.verify(request.token, config.SECRET)
-        const user = await User.findById(decodedToken.id)
-        request.userId = user._id.toString()
+        request.userId = decodedToken.id
+        // console.log(decodedToken.username)
+        // const user = await User.findById(decodedToken.id)
+        // request.userId = user._id.toString()
     }
     next()
 }

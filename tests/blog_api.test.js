@@ -1,16 +1,17 @@
-const { test, after, before, afterEach, beforeEach } = require('node:test')
+const { test, after, before } = require('node:test')
 const mongoose = require('mongoose')
 const supertest = require('supertest')
 const assert = require('assert')
+
 const app = require('../app')
+const api = supertest(app)
+
 const Blog = require('../models/blog')
 const User = require('../models/user')
 
-const api = supertest(app)
-
 before(async () => {
+    await User.deleteMany({})
     await Blog.deleteMany({})
-    console.log('cleared database')
 
     const newUser ={
         username: "root",
@@ -22,9 +23,7 @@ before(async () => {
         .send(newUser)
 })
 
-let token;
-
-test.only('user can log in with correct credentials', async () => {
+test('user can log in with correct credentials', async () => {
     const userLogin = {
         username: "root",
         password: "rootPassword"
@@ -36,7 +35,7 @@ test.only('user can log in with correct credentials', async () => {
         .expect('Content-Type', /application\/json/)
 
     token = loginResponse.body.token
-    assert(loginResponse.body.token)
+    assert(token)
 })
 
 test('on creating a blog if no token is provided, returns unauthorized', async () => {
@@ -50,23 +49,33 @@ test('on creating a blog if no token is provided, returns unauthorized', async (
 })
 
 test('first creates 2 blog posts', async () => {
+    const newBlogOne = {
+        "title": "blog test 1"
+    }
 
-    console.log(token)
-    await api.post('/api/blogs')
-        .send(newBlog)
-        .set('Authorization', `Bearer ${token}`)
-        // .expect(201)
-        // .expect('Content-Type', /application\/json/)
+    const newBlogTwo = {
+        "title": "blog test 2"
+    }
 
     await api.post('/api/blogs')
-        .send(newBlog)
         .set('Authorization', `Bearer ${token}`)
-        // .expect(201)
-        // .expect('Content-Type', /application\/json/)
+        .send(newBlogOne)
+        .expect(201)
+        .expect('Content-Type', /application\/json/)
+    
+    // console.log('created first blog')
+
+    await api.post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
+        .send(newBlogTwo)
+        .expect(201)
+        .expect('Content-Type', /application\/json/)
+
+    // console.log('created second blog')
     
     const checkIfTwo = await api.get('/api/blogs')
-        // .expect(200)
-        // .expect('Content-Type', /application\/json/)
+        .expect(200)
+        .expect('Content-Type', /application\/json/)
     
     assert.strictEqual(checkIfTwo.body.length, 2)
 })
@@ -106,8 +115,8 @@ test('creates new blog via POST and checks the count', async () => {
         }
 
     await api.post('/api/blogs')
-        .send(newBlog)
         .set('Authorization', `Bearer ${token}`)
+        .send(newBlog)
         .expect(201)
         .expect('Content-Type', /application\/json/)
 
@@ -116,7 +125,7 @@ test('creates new blog via POST and checks the count', async () => {
     // Check that the counter increases in one
     assert.strictEqual(prevCounter.body.length, afterCounter.body.length -1)
     // Check that the created item has the correct values
-    // assert.strictEqual(afterCounter.body.slice(-1)[0].likes, likesGenerator)
+    assert.strictEqual(afterCounter.body.slice(-1)[0].likes, likesGenerator)
 })
 
 test('if no likes were saved, it defaults to 0', async () => {
@@ -127,8 +136,8 @@ test('if no likes were saved, it defaults to 0', async () => {
     }
 
     await api.post('/api/blogs')
-        .send(newBlog)
         .set('Authorization', `Bearer ${token}`)
+        .send(newBlog)
         .expect(201)
         .expect('Content-Type', /application\/json/)
     
@@ -143,8 +152,8 @@ test('if no title is submitted, it throws 400', async () => {
     }
 
     await api.post('/api/blogs')
-        .send(newBlog)
         .set('Authorization', `Bearer ${token}`)
+        .send(newBlog)
         .expect(400)
 })
 
@@ -176,28 +185,32 @@ test('it updates a post correctly', async () => {
     }
     // create a new post
     await api.post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
         .send(blog)
         .expect(201)
         .expect('Content-Type', /application\/json/)
-
+    
     // catches the post created
     const newPost = await api.get('/api/blogs')
     const dataNewPost = newPost.body.slice(-1)[0]
-    // Check it has the correct amount of likes
-    // assert.strictEqual(dataNewPost.likes === 2, true)
 
+    // Check if it has the correct amount of likes
+    assert.strictEqual(dataNewPost.likes === 2, true)
+    
     // update the likes to 100
     const newLikes = {
         "likes": 100
     }
     await api.put(`/api/blogs/${dataNewPost.id}`)
+        .set('Authorization', `Bearer ${token}`)
         .send(newLikes)
         .expect(200)
 
     // get the updated post
     const updatedPost = await api.get(`/api/blogs/${dataNewPost.id}`)
+
     // compare the likes to 100
-    assert.strictEqual(updatedPost.body.likes, 100)
+    assert.strictEqual(updatedPost.body[0].likes, 100)
 })
 
 test('it deletes all posts correctly', async () => {

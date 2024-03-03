@@ -32,11 +32,13 @@ blogRouter.post('/', async (request, response) => {
   }
 
   //grab the person who bears the token
-  const user = await User.findById(decodedToken.id)
+  // const user = await User.findById(decodedToken.id)
   
   //create a new blog and assign the id
   const blog = new Blog(request.body)
-  blog.author = user._id
+  
+  // blog.author = user._id.toString()
+  blog.author = request.userId
 
   if (request.body.title === undefined) {
     return response.status(400).json({ error: 'content missing' })
@@ -58,7 +60,7 @@ blogRouter.delete('/:id', async (request, response) => {
   const ownerOfBlog = blogToDelete.author.toString()
   
   const userId = request.userId
-  console.log(`User ${userId} is the owner of blog ${ownerOfBlog}? ${userId === ownerOfBlog}`)
+  // console.log(`User ${userId} is the owner of blog ${ownerOfBlog}? ${userId === ownerOfBlog}`)
 
   if (userId === ownerOfBlog) {
     const blogs = await Blog.findByIdAndDelete(request.params.id)
@@ -69,8 +71,28 @@ blogRouter.delete('/:id', async (request, response) => {
 })
 
 blogRouter.put('/:id', async (request, response) => {
+  /*
   const blogs = await Blog.findByIdAndUpdate(request.params.id, {...request.body}, { new: true })
   response.json(blogs)
+  */
+  // check existence
+  const checkExistence = await Blog.find({ _id: request.params.id })
+  if (checkExistence.length === 0) {
+    return response.status(404).json({ error: 'blog not found' })
+  }
+  // console.log("blog exists")
+
+  // compare it to the author of the blog to modify
+  const blogToModify = await Blog.findById(request.params.id)
+  const ownerOfBlog = blogToModify.author.toString()
+  // console.log(`User ${request.userId} is the owner of blog ${ownerOfBlog}? ${request.userId === ownerOfBlog}`)
+
+  if (request.userId === ownerOfBlog) {
+    const blogs = await Blog.findByIdAndUpdate(request.params.id, {...request.body}, { new: true })
+    response.json(blogs)
+  } else {
+    response.status(401).json({ error: 'unauthorized' })
+  }
 })
 
 module.exports = blogRouter
